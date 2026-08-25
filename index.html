@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Formula Forge</title>
+<title>Math DIY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -41,7 +41,6 @@
   .brand span{color:var(--amber);}
   .hud-stats{ display:flex; align-items:center; gap:12px; font-family:var(--font-mono); font-size:12px; color:var(--ink-dim); }
   .hud-stats b{color:var(--cyan); font-weight:700;}
-  .lives{letter-spacing:2px; color:var(--red);}
   .change-btn{
     font-family:var(--font-mono); font-size:10px; color:var(--ink-dim);
     border:1px solid var(--panel-line); border-radius:6px; padding:3px 7px; cursor:pointer;
@@ -49,14 +48,15 @@
 
   .stage-strip{ display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:11px; color:var(--ink-dim); padding:0 4px; }
   .stage-strip .diff-tag{ color:var(--purple); font-weight:700; }
+  .stage-strip .progress{ color:var(--amber); font-weight:700; }
   .stage-strip .line{flex:1; height:1px; background:var(--panel-line);}
 
-  .timer-track{ height:6px; border-radius:4px; background:var(--panel); overflow:hidden; border:1px solid var(--panel-line); }
-  .timer-fill{ height:100%; width:100%; background:linear-gradient(90deg, var(--cyan), var(--amber)); transition:width 0.2s linear, background 0.3s; }
+  .timer-track{ height:7px; border-radius:4px; background:var(--panel); overflow:hidden; border:1px solid var(--panel-line); }
+  .timer-fill{ height:100%; width:100%; background:linear-gradient(90deg, var(--cyan), var(--amber)); transition:width 0.3s linear, background 0.3s; }
 
   .display-panel{
     background:linear-gradient(180deg, #0d1428, #0a0f22);
-    border:1px solid var(--panel-line); border-radius:16px; padding:20px 12px;
+    border:1px solid var(--panel-line); border-radius:16px; padding:22px 12px;
     box-shadow: inset 0 0 30px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.35);
     transition: box-shadow 0.25s, border-color 0.25s;
   }
@@ -64,6 +64,7 @@
   .display-panel.wrong{ border-color:var(--red); box-shadow: inset 0 0 30px rgba(255,92,108,0.15), 0 0 24px rgba(255,92,108,0.35); animation: shake 0.35s; }
   @keyframes shake{ 10%,90%{transform:translateX(-2px);} 20%,80%{transform:translateX(4px);} 30%,50%,70%{transform:translateX(-8px);} 40%,60%{transform:translateX(8px);} }
   .slots{ display:flex; align-items:center; justify-content:center; gap:7px; flex-wrap:wrap; }
+  .slots.grid5{ display:grid; grid-template-columns:repeat(5, 62px); justify-content:center; gap:7px; }
   .slot{
     width:62px; height:72px; border-radius:11px; border:2px dashed var(--panel-line);
     display:flex; align-items:center; justify-content:center;
@@ -73,8 +74,13 @@
   .slot.filled{ border-style:solid; border-color:var(--tile-border); background:var(--tile); }
   .slot.op{color:var(--cyan);}
   .slot:active{transform:scale(0.94);}
-  .status-msg{ text-align:center; margin-top:12px; font-family:var(--font-mono); font-size:13px; letter-spacing:1px; color:var(--ink-dim); min-height:16px; transition:transform 0.2s; }
-  .status-msg.correct{color:var(--green); transform:scale(1.08); font-weight:700;}
+  .eq-stamp{
+    width:40px; height:72px; display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:900; font-size:26px; color:var(--ink-dim);
+    opacity:0.85; user-select:none;
+  }
+  .status-msg{ text-align:center; margin-top:14px; font-family:var(--font-mono); font-size:14px; letter-spacing:0.5px; color:var(--ink-dim); min-height:18px; transition:transform 0.2s; }
+  .status-msg.correct{color:var(--green); transform:scale(1.06); font-weight:700;}
   .status-msg.wrong{color:var(--red);}
 
   .tray-label{ font-family:var(--font-mono); font-size:11px; color:var(--ink-dim); letter-spacing:1px; padding:0 4px; display:flex; justify-content:space-between; }
@@ -82,6 +88,7 @@
     display:flex; gap:9px; justify-content:center; flex-wrap:wrap;
     padding:12px; background:var(--panel); border:1px solid var(--panel-line); border-radius:14px; min-height:84px;
   }
+  .tray.grid5{ display:grid; grid-template-columns:repeat(5, 62px); justify-content:center; }
   .tile{
     width:62px; height:66px; border-radius:11px;
     background:linear-gradient(180deg, var(--tile), #17203d); border:1px solid var(--tile-border);
@@ -99,21 +106,16 @@
   .tile:active{transform:translateY(2px); box-shadow:0 1px 0 #0c1226;}
   .tile.used{opacity:0; pointer-events:none; transform:scale(0.7);}
 
-  .controls{ display:flex; gap:10px; }
-  .btn{
-    flex:1; padding:13px 10px; border-radius:12px; border:1px solid var(--panel-line);
-    background:var(--panel); color:var(--ink); font-family:var(--font-body); font-weight:600;
-    font-size:13px; cursor:pointer; text-align:center;
-  }
-  .btn:active{opacity:0.7;}
-  .btn.primary{ background:linear-gradient(180deg, var(--amber), #d98f10); border-color:transparent; color:#231400; }
-
   .overlay{ position:fixed; inset:0; background:rgba(6,9,20,0.92); display:none; align-items:center; justify-content:center; z-index:10; padding:20px; }
   .overlay.show{display:flex;}
   .overlay-card{ background:var(--panel); border:1px solid var(--panel-line); border-radius:18px; padding:28px 24px; text-align:center; max-width:360px; width:100%; }
   .overlay-card h2{ font-family:var(--font-display); color:var(--amber); margin:0 0 4px; font-size:19px; letter-spacing:1px; }
   .overlay-card p{color:var(--ink-dim); font-size:12.5px; margin:0 0 18px;}
+  .overlay-card p#champSub{ color:var(--ink); font-size:17px; font-weight:700; line-height:1.4; }
   .overlay-card .final-score{ font-family:var(--font-mono); font-size:32px; color:var(--cyan); margin-bottom:18px; }
+  .overlay-card .trophy{ font-size:52px; margin-bottom:6px; }
+  .overlay-card .champ-title{ font-family:var(--font-display); color:var(--green); font-size:22px; letter-spacing:1px; margin:0 0 4px; }
+  .overlay-actions{ display:flex; flex-direction:column; gap:10px; }
 
   .diff-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:6px; }
   .diff-btn{
@@ -127,23 +129,31 @@
   .diff-btn.medium .dname{color:var(--amber);}
   .diff-btn.hard .dname{color:#ff9a5c;}
   .diff-btn.veryhard .dname{color:var(--red);}
+  .diff-btn.locked{ opacity:0.4; pointer-events:none; }
+
+  .btn{
+    padding:13px 10px; border-radius:12px; border:1px solid var(--panel-line);
+    background:var(--panel); color:var(--ink); font-family:var(--font-body); font-weight:600;
+    font-size:13px; cursor:pointer; text-align:center;
+  }
+  .btn:active{opacity:0.7;}
+  .btn.primary{ background:linear-gradient(180deg, var(--amber), #d98f10); border-color:transparent; color:#231400; }
 </style>
 </head>
 <body>
 
 <div class="app">
   <div class="hud">
-    <div class="brand">FORMULA <span>FORGE</span></div>
+    <div class="brand">Math <span>DIY</span></div>
     <div class="hud-stats">
       <div>SCORE <b id="scoreVal">0</b></div>
-      <div class="lives" id="livesVal">♥♥♥</div>
       <div class="change-btn" id="changeBtn">CHANGE</div>
     </div>
   </div>
 
   <div class="stage-strip">
     <span class="diff-tag" id="diffTag">EASY</span>
-    <span id="stageLabel">STAGE 01</span>
+    <span class="progress" id="progressLabel">GAME 1 / 10</span>
     <div class="line"></div>
     <span id="opLabel">+ −</span>
   </div>
@@ -161,35 +171,51 @@
   </div>
 </div>
 
-<div class="overlay" id="overlay">
+<div class="overlay" id="timeoutOverlay">
   <div class="overlay-card">
-    <h2>OUT OF LIVES</h2>
-    <p>The forge has cooled. Here's how you did.</p>
-    <div class="final-score" id="finalScore">0</div>
-    <div class="btn primary" id="restartBtn">Choose Difficulty</div>
+    <h2>TIME'S UP</h2>
+    <p id="timeoutDesc">The forge went cold before you finished.</p>
+    <div class="final-score" id="timeoutScore">0</div>
+    <div class="overlay-actions">
+      <div class="btn primary" id="retryBtn">Try Again</div>
+      <div class="btn" id="timeoutMenuBtn">Choose Difficulty</div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="champOverlay">
+  <div class="overlay-card">
+    <div class="trophy">🏆👏</div>
+    <div class="champ-title" id="champTitle">YOU ARE THE CHAMPION!</div>
+    <p id="champSub">Bravo! You solved all 10 equations.</p>
+    <div class="final-score" id="champScore">0</div>
+    <div class="overlay-actions">
+      <div class="btn primary" id="nextDiffBtn">Next Difficulty</div>
+      <div class="btn" id="champMenuBtn">Back to Menu</div>
+    </div>
   </div>
 </div>
 
 <div class="overlay show" id="startOverlay">
   <div class="overlay-card">
-    <h2>FORMULA FORGE</h2>
-    <p>Pick a difficulty to start forging equations.</p>
+    <h2>Math DIY</h2>
+    <p>Each difficulty is 10 equations against the clock. Pick one to start.</p>
     <div class="diff-list">
       <div class="diff-btn easy" data-diff="easy">
         <div class="dname">EASY</div>
-        <div class="ddesc">+ − × ÷ &nbsp;•&nbsp; 5 tiles &nbsp;•&nbsp; no decoys</div>
+        <div class="ddesc">+ − × ÷ &nbsp;•&nbsp; 5 tiles &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 1:30</div>
       </div>
       <div class="diff-btn medium" data-diff="medium">
         <div class="dname">MEDIUM</div>
-        <div class="ddesc">+ − × ÷ &nbsp;•&nbsp; 6 tiles &nbsp;•&nbsp; 1 decoy tile</div>
+        <div class="ddesc">+ − × ÷ &nbsp;•&nbsp; 6 tiles, 1 decoy &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 1:30</div>
       </div>
       <div class="diff-btn hard" data-diff="hard">
         <div class="dname">HARD</div>
-        <div class="ddesc">2 operations &nbsp;•&nbsp; 8 tiles &nbsp;•&nbsp; 1 decoy tile</div>
+        <div class="ddesc">2 operations &nbsp;•&nbsp; 8 tiles, 1 decoy &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 8:00</div>
       </div>
       <div class="diff-btn veryhard" data-diff="veryhard">
         <div class="dname">VERY HARD</div>
-        <div class="ddesc">3 operations &nbsp;•&nbsp; 10 tiles &nbsp;•&nbsp; order of operations</div>
+        <div class="ddesc">3 operations &nbsp;•&nbsp; 10 tiles, 2 decoys &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 10:00</div>
       </div>
     </div>
   </div>
@@ -199,27 +225,38 @@
 (function(){
   const PRAISE = ["AWESOME!", "GREAT JOB!", "BRILLIANT!", "FANTASTIC!", "YOU'RE ON FIRE!", "NICE WORK!", "PERFECT!", "OUTSTANDING!", "WELL DONE!", "MATH WIZARD!", "CRUSHED IT!"];
 
-  const DIFFICULTIES = {
-    easy:     { label:'EASY',      numCount:2, ops:['+','−','×','÷'], decoys:0, range:[1,10],  baseTime:35, minTime:18 },
-    medium:   { label:'MEDIUM',    numCount:2, ops:['+','−','×','÷'], decoys:1, range:[1,12],  baseTime:38, minTime:20 },
-    hard:     { label:'HARD',      numCount:3, ops:['+','−','×','÷'], decoys:1, range:[1,12],  baseTime:55, minTime:30 },
-    veryhard: { label:'VERY HARD', numCount:4, ops:['+','−','×','÷'], decoys:2, range:[2,15],  baseTime:75, minTime:40 },
+  const CHAMPION_MESSAGES = {
+    easy:     { title: "HALLELUJAH!",     sub: "You are awesome." },
+    medium:   { title: "GOD IS GOOD!",    sub: "You are God's precious kid." },
+    hard:     { title: "THANK YOU JESUS!", sub: "You are God's blessed kid." },
+    veryhard: { title: "PRAISE THE LORD!", sub: "You are God's masterpiece." },
   };
 
-  const OPS = {
-    '+': (a,b)=>a+b,
-    '−': (a,b)=>a-b,
-    '×': (a,b)=>a*b,
-    '÷': (a,b)=>a/b,
+  const ENCOURAGE = (remaining)=>[
+    `Keep it up! ${remaining} more to go`,
+    `Good job! ${remaining} left`,
+    `Nice! ${remaining} more games to win`,
+    `You're crushing it — ${remaining} to go`,
+    `Great! ${remaining} more and you're champion`,
+    `${remaining} to go — don't stop now!`,
+  ];
+
+  const DIFF_ORDER = ['easy','medium','hard','veryhard'];
+  const DIFFICULTIES = {
+    easy:     { label:'EASY',      numCount:2, ops:['+','−','×','÷'], decoys:0, range:[1,10],  sessionTime:90 },
+    medium:   { label:'MEDIUM',    numCount:2, ops:['+','−','×','÷'], decoys:1, range:[1,12],  sessionTime:90 },
+    hard:     { label:'HARD',      numCount:3, ops:['+','−','×','÷'], decoys:1, range:[1,12],  sessionTime:480 },
+    veryhard: { label:'VERY HARD', numCount:4, ops:['+','−','×','÷'], decoys:2, range:[2,15],  sessionTime:600 },
   };
+
+  const TOTAL_GAMES = 10;
 
   const state = {
     difficulty: 'easy',
-    level: 1,
+    gameIndex: 1,          // 1..10
     score: 0,
-    lives: 3,
-    timeLeft: 35,
-    maxTime: 35,
+    sessionTimeLeft: 300,
+    sessionMaxTime: 300,
     timerId: null,
     puzzle: null,
     slots: [],
@@ -229,9 +266,8 @@
 
   const el = {
     score: document.getElementById('scoreVal'),
-    lives: document.getElementById('livesVal'),
-    stage: document.getElementById('stageLabel'),
     diffTag: document.getElementById('diffTag'),
+    progressLabel: document.getElementById('progressLabel'),
     opLabel: document.getElementById('opLabel'),
     timerFill: document.getElementById('timerFill'),
     displayPanel: document.getElementById('displayPanel'),
@@ -239,16 +275,23 @@
     status: document.getElementById('statusMsg'),
     tray: document.getElementById('tray'),
     decoyHint: document.getElementById('decoyHint'),
-    overlay: document.getElementById('overlay'),
-    finalScore: document.getElementById('finalScore'),
-    restartBtn: document.getElementById('restartBtn'),
-    startOverlay: document.getElementById('startOverlay'),
     changeBtn: document.getElementById('changeBtn'),
+    startOverlay: document.getElementById('startOverlay'),
+    timeoutOverlay: document.getElementById('timeoutOverlay'),
+    timeoutDesc: document.getElementById('timeoutDesc'),
+    timeoutScore: document.getElementById('timeoutScore'),
+    retryBtn: document.getElementById('retryBtn'),
+    timeoutMenuBtn: document.getElementById('timeoutMenuBtn'),
+    champOverlay: document.getElementById('champOverlay'),
+    champTitle: document.getElementById('champTitle'),
+    champSub: document.getElementById('champSub'),
+    champScore: document.getElementById('champScore'),
+    nextDiffBtn: document.getElementById('nextDiffBtn'),
+    champMenuBtn: document.getElementById('champMenuBtn'),
   };
 
   function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 
-  // Generic evaluator: respects × ÷ before + −. tokens alternate num,op,num,...
   function evalExpr(tokens){
     if(tokens.length===0 || tokens.length%2===0) return null;
     for(let i=0;i<tokens.length;i++){
@@ -264,7 +307,6 @@
       ops.push(tokens[i].value);
       vals.push(n);
     }
-    // pass 1: × and ÷
     const vals2=[vals[0]], ops2=[];
     for(let i=0;i<ops.length;i++){
       const op=ops[i], nextVal=vals[i+1];
@@ -274,7 +316,6 @@
         vals2[vals2.length-1] = vals2[vals2.length-1]/nextVal;
       } else { vals2.push(nextVal); ops2.push(op); }
     }
-    // pass 2: + and -
     let result = vals2[0];
     for(let i=0;i<ops2.length;i++){
       result = ops2[i]==='+' ? result+vals2[i+1] : result-vals2[i+1];
@@ -328,32 +369,42 @@
 
   function generatePuzzle(){
     const cfg = DIFFICULTIES[state.difficulty];
-    const solutionTiles = generateSolutionTokens(cfg);
+    const solutionTiles = generateSolutionTokens(cfg); // includes a fixed '=' tile
+    const realTiles = solutionTiles.filter(t=>t.value!=='='); // what the player actually places
     const seen = solutionTiles.map(t=>t.value+t.type);
     const decoys=[];
     for(let i=0;i<cfg.decoys;i++){
       const d = generateDecoy(cfg, seen.concat(decoys.map(x=>x.value+x.type)));
       decoys.push(d);
     }
+    const full = realTiles.concat(decoys);
     let tray;
-    const full = solutionTiles.concat(decoys);
     do{
       tray = [...full].sort(()=>Math.random()-0.5);
-    } while(tray.every((t,i)=> i<solutionTiles.length ? t.value===solutionTiles[i].value : true) && decoys.length===0);
-    return { solutionTiles, tray, slotCount: solutionTiles.length };
+    } while(tray.every((t,i)=> i<realTiles.length ? t.value===realTiles[i].value : true) && decoys.length===0);
+    return { solutionTiles, realTiles, tray, slotCount: realTiles.length };
   }
 
   function render(){
     const cfg = DIFFICULTIES[state.difficulty];
     el.score.textContent = state.score;
-    el.lives.textContent = '♥'.repeat(state.lives) + '♡'.repeat(3-state.lives);
-    el.stage.textContent = 'STAGE ' + String(state.level).padStart(2,'0');
     el.diffTag.textContent = cfg.label;
+    el.progressLabel.textContent = 'GAME ' + state.gameIndex + ' / ' + TOTAL_GAMES;
     el.opLabel.textContent = cfg.ops.join(' ');
     el.decoyHint.textContent = cfg.decoys>0 ? (cfg.decoys+' decoy tile(s) hidden') : '';
 
+    const useGrid = (state.difficulty === 'hard' || state.difficulty === 'veryhard');
+    el.slots.classList.toggle('grid5', useGrid);
+    el.tray.classList.toggle('grid5', useGrid);
+
     el.slots.innerHTML = '';
     state.slots.forEach((s, i)=>{
+      if(i === state.slots.length - 1){
+        const eq = document.createElement('div');
+        eq.className = 'eq-stamp';
+        eq.textContent = '=';
+        el.slots.appendChild(eq);
+      }
       const d = document.createElement('div');
       d.className = 'slot' + (s ? ' filled' : '') + (s && s.type==='op' ? ' op' : '');
       d.textContent = s ? s.value : '';
@@ -362,29 +413,12 @@
     });
 
     el.tray.innerHTML = '';
-    const solutionCount = state.puzzle.slotCount;
     state.puzzle.tray.forEach((t, i)=>{
-      const isDecoy = i>=0 && !isPartOfSolutionAt(i);
       const d = document.createElement('div');
       d.className = 'tile' + (t.type==='op' ? ' op' : '') + (state.trayUsed[i] ? ' used' : '');
       d.textContent = t.value;
       d.addEventListener('click', ()=>onTrayTap(i));
       el.tray.appendChild(d);
-    });
-  }
-
-  // tracks which tray indices correspond to real solution tiles vs decoys, computed once per puzzle
-  let decoyFlags = [];
-  function isPartOfSolutionAt(i){ return !decoyFlags[i]; }
-
-  function computeDecoyFlags(){
-    const sol = state.puzzle.solutionTiles.map(t=>t.value+'|'+t.type);
-    const used = sol.slice();
-    decoyFlags = state.puzzle.tray.map(t=>{
-      const key = t.value+'|'+t.type;
-      const idx = used.indexOf(key);
-      if(idx>=0){ used.splice(idx,1); return false; }
-      return true;
     });
   }
 
@@ -408,24 +442,15 @@
     render();
   }
 
-  function resetTiles(){
-    if(state.locked) return;
-    state.slots = new Array(state.puzzle.slotCount).fill(null);
-    state.trayUsed = state.puzzle.tray.map(()=>false);
-    setStatus('tap tiles below to build the equation', '');
-    render();
-  }
-
   function checkAnswer(){
-    const eqIndex = state.slots.findIndex(s=>s.value==='=');
-    let valid = false;
-    if(eqIndex>0 && eqIndex<state.slots.length-1){
-      const left = state.slots.slice(0, eqIndex);
-      const right = state.slots.slice(eqIndex+1);
-      const lv = evalExpr(left);
-      const rv = evalExpr(right);
-      valid = lv!==null && rv!==null && Math.abs(lv-rv)<1e-9;
-    }
+    // '=' is fixed and stamped in — the last slot is always the result, everything
+    // before it is the expression the player has built.
+    const eqIndex = state.slots.length - 1;
+    const left = state.slots.slice(0, eqIndex);
+    const right = state.slots.slice(eqIndex);
+    const lv = evalExpr(left);
+    const rv = evalExpr(right);
+    const valid = lv!==null && rv!==null && Math.abs(lv-rv)<1e-9;
     if(valid) onCorrect(); else onWrong();
   }
 
@@ -433,17 +458,27 @@
     state.locked = true;
     el.displayPanel.classList.add('correct');
     const praise = PRAISE[rand(0,PRAISE.length-1)];
-    setStatus('✓ ' + praise, 'correct');
-    const speedBonus = Math.round((state.timeLeft/state.maxTime)*50);
-    const cfg = DIFFICULTIES[state.difficulty];
     const diffMult = {easy:1, medium:1.4, hard:2, veryhard:3}[state.difficulty];
-    state.score += Math.round((100 + speedBonus + state.level*10) * diffMult);
-    stopTimer();
+    state.score += Math.round((100 + Math.round((state.sessionTimeLeft/state.sessionMaxTime)*30)) * diffMult);
+    el.score.textContent = state.score;
+
+    if(state.gameIndex >= TOTAL_GAMES){
+      setStatus('✓ ' + praise, 'correct');
+      stopTimer();
+      setTimeout(showChampion, 900);
+      return;
+    }
+
+    const remaining = TOTAL_GAMES - state.gameIndex;
+    const encouragePool = ENCOURAGE(remaining);
+    const encourage = encouragePool[rand(0,encouragePool.length-1)];
+    setStatus('✓ ' + praise + ' — ' + encourage, 'correct');
+
     setTimeout(()=>{
       el.displayPanel.classList.remove('correct');
-      state.level++;
-      nextPuzzle();
-    }, 1000);
+      state.gameIndex++;
+      loadPuzzle();
+    }, 1100);
   }
 
   function onWrong(){
@@ -451,7 +486,10 @@
     setStatus('✗ NOT BALANCED — TRY AGAIN', 'wrong');
     setTimeout(()=>{
       el.displayPanel.classList.remove('wrong');
-      resetTiles();
+      state.slots = new Array(state.puzzle.slotCount).fill(null);
+      state.trayUsed = state.puzzle.tray.map(()=>false);
+      setStatus('tap tiles below to build the equation', '');
+      render();
     }, 700);
   }
 
@@ -460,75 +498,87 @@
     el.status.className = 'status-msg' + (cls ? ' '+cls : '');
   }
 
-  function startTimer(){
+  function startSessionTimer(){
     stopTimer();
     const cfg = DIFFICULTIES[state.difficulty];
-    state.maxTime = Math.max(cfg.minTime, cfg.baseTime - state.level*2);
-    state.timeLeft = state.maxTime;
+    state.sessionMaxTime = cfg.sessionTime;
+    state.sessionTimeLeft = cfg.sessionTime;
     updateTimerBar();
     state.timerId = setInterval(()=>{
-      state.timeLeft -= 0.1;
+      state.sessionTimeLeft -= 0.1;
       updateTimerBar();
-      if(state.timeLeft<=0){
+      if(state.sessionTimeLeft<=0){
         stopTimer();
-        loseLife();
+        onSessionTimeout();
       }
     }, 100);
   }
   function stopTimer(){ if(state.timerId){ clearInterval(state.timerId); state.timerId=null; } }
   function updateTimerBar(){
-    const pct = Math.max(0, (state.timeLeft/state.maxTime)*100);
+    const pct = Math.max(0, (state.sessionTimeLeft/state.sessionMaxTime)*100);
     el.timerFill.style.width = pct+'%';
-    el.timerFill.style.background = pct<25
+    el.timerFill.style.background = pct<20
       ? 'linear-gradient(90deg, var(--red), #ff8a8a)'
       : 'linear-gradient(90deg, var(--cyan), var(--amber))';
   }
 
-  function loseLife(){
-    state.lives--;
-    setStatus('⏱ TIME UP', 'wrong');
-    render();
-    if(state.lives<=0){
-      gameOver();
+  function onSessionTimeout(){
+    state.locked = true;
+    el.timeoutDesc.textContent = `You solved ${state.gameIndex-1} of ${TOTAL_GAMES} equations before time ran out.`;
+    el.timeoutScore.textContent = state.score;
+    el.timeoutOverlay.classList.add('show');
+  }
+
+  function showChampion(){
+    const idx = DIFF_ORDER.indexOf(state.difficulty);
+    const isLast = idx === DIFF_ORDER.length-1;
+    const msg = CHAMPION_MESSAGES[state.difficulty];
+    el.champTitle.textContent = msg.title;
+    el.champSub.textContent = msg.sub;
+    el.champScore.textContent = state.score;
+    if(isLast){
+      el.nextDiffBtn.textContent = 'You mastered every level!';
+      el.nextDiffBtn.classList.add('btn');
+      el.nextDiffBtn.onclick = showStartScreen;
     } else {
-      setTimeout(nextPuzzle, 700);
+      const nextDiff = DIFF_ORDER[idx+1];
+      el.nextDiffBtn.textContent = 'Next Difficulty: ' + DIFFICULTIES[nextDiff].label;
+      el.nextDiffBtn.onclick = ()=> beginGame(nextDiff);
     }
+    el.champOverlay.classList.add('show');
   }
 
-  function gameOver(){
-    el.finalScore.textContent = state.score;
-    el.overlay.classList.add('show');
-  }
-
-  function nextPuzzle(){
+  function loadPuzzle(){
     state.locked = false;
     state.puzzle = generatePuzzle();
-    computeDecoyFlags();
     state.slots = new Array(state.puzzle.slotCount).fill(null);
     state.trayUsed = state.puzzle.tray.map(()=>false);
     setStatus('tap tiles below to build the equation', '');
     render();
-    startTimer();
   }
 
   function beginGame(diff){
     state.difficulty = diff;
-    state.level = 1;
+    state.gameIndex = 1;
     state.score = 0;
-    state.lives = 3;
-    el.overlay.classList.remove('show');
     el.startOverlay.classList.remove('show');
-    nextPuzzle();
+    el.timeoutOverlay.classList.remove('show');
+    el.champOverlay.classList.remove('show');
+    loadPuzzle();
+    startSessionTimer();
   }
 
   function showStartScreen(){
     stopTimer();
-    el.overlay.classList.remove('show');
+    el.timeoutOverlay.classList.remove('show');
+    el.champOverlay.classList.remove('show');
     el.startOverlay.classList.add('show');
   }
 
-  el.restartBtn.addEventListener('click', showStartScreen);
   el.changeBtn.addEventListener('click', showStartScreen);
+  el.timeoutMenuBtn.addEventListener('click', showStartScreen);
+  el.champMenuBtn.addEventListener('click', showStartScreen);
+  el.retryBtn.addEventListener('click', ()=> beginGame(state.difficulty));
   document.querySelectorAll('.diff-btn').forEach(btn=>{
     btn.addEventListener('click', ()=> beginGame(btn.dataset.diff));
   });

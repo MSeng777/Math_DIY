@@ -203,19 +203,19 @@
     <div class="diff-list">
       <div class="diff-btn easy" data-diff="easy">
         <div class="dname">EASY</div>
-        <div class="ddesc">+ − × ÷ &nbsp;•&nbsp; 5 tiles &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 1:30</div>
+        <div class="ddesc">+ − × ÷ &nbsp;•&nbsp; 5 tiles &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 1:00</div>
       </div>
       <div class="diff-btn medium" data-diff="medium">
         <div class="dname">MEDIUM</div>
-        <div class="ddesc">+ − × ÷ &nbsp;•&nbsp; 6 tiles, 1 decoy &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 1:30</div>
+        <div class="ddesc">+ − × ÷ &nbsp;•&nbsp; 6 tiles, 1 decoy &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 1:00</div>
       </div>
       <div class="diff-btn hard" data-diff="hard">
         <div class="dname">HARD</div>
-        <div class="ddesc">2 operations &nbsp;•&nbsp; 8 tiles, 1 decoy &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 8:00</div>
+        <div class="ddesc">2 operations &nbsp;•&nbsp; 8 tiles, 1 decoy &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 5:00</div>
       </div>
       <div class="diff-btn veryhard" data-diff="veryhard">
         <div class="dname">VERY HARD</div>
-        <div class="ddesc">3 operations &nbsp;•&nbsp; 10 tiles, 2 decoys &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 10:00</div>
+        <div class="ddesc">3 operations &nbsp;•&nbsp; 10 tiles, 2 decoys &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 5:00</div>
       </div>
     </div>
   </div>
@@ -243,10 +243,10 @@
 
   const DIFF_ORDER = ['easy','medium','hard','veryhard'];
   const DIFFICULTIES = {
-    easy:     { label:'EASY',      numCount:2, ops:['+','−','×','÷'], decoys:0, range:[1,10],  sessionTime:90 },
-    medium:   { label:'MEDIUM',    numCount:2, ops:['+','−','×','÷'], decoys:1, range:[1,12],  sessionTime:90 },
-    hard:     { label:'HARD',      numCount:3, ops:['+','−','×','÷'], decoys:1, range:[1,12],  sessionTime:480 },
-    veryhard: { label:'VERY HARD', numCount:4, ops:['+','−','×','÷'], decoys:2, range:[2,15],  sessionTime:600 },
+    easy:     { label:'EASY',      numCount:2, ops:['+','−','×','÷'], decoys:0, range:[1,10],  sessionTime:60 },
+    medium:   { label:'MEDIUM',    numCount:2, ops:['+','−','×','÷'], decoys:1, range:[1,12],  sessionTime:60 },
+    hard:     { label:'HARD',      numCount:3, ops:['+','−','×','÷'], decoys:1, range:[1,12],  sessionTime:300 },
+    veryhard: { label:'VERY HARD', numCount:4, ops:['+','−','×','÷'], decoys:2, range:[2,15],  sessionTime:300 },
   };
 
   const TOTAL_GAMES = 10;

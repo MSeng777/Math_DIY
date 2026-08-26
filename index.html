@@ -13,12 +13,14 @@
     --panel-line:#2a3660;
     --tile:#1c2748;
     --tile-border:#3a4a80;
-    --decoy-border:#6a4a8a;
+    --tile-inactive:#10162a;
+    --tile-inactive-border:#1c2440;
     --amber:#ffb020;
     --cyan:#4fd8eb;
     --green:#3ee08a;
     --red:#ff5c6c;
     --purple:#b98cf0;
+    --pink:#ff6fb0;
     --ink:#e8edf5;
     --ink-dim:#8894b8;
     --font-display:'Orbitron', sans-serif;
@@ -34,102 +36,89 @@
     display:flex; align-items:center; justify-content:center;
     padding:16px; overflow-x:hidden;
   }
-  .app{ width:100%; max-width:440px; display:flex; flex-direction:column; gap:14px; }
+  .app{ width:100%; max-width:420px; display:flex; flex-direction:column; gap:12px; }
 
-  .hud{ display:flex; align-items:center; justify-content:space-between; padding:2px 4px; }
-  .brand{ font-family:var(--font-display); font-weight:900; font-size:15px; letter-spacing:2px; }
-  .brand span{color:var(--amber);}
-  .hud-stats{ display:flex; align-items:center; gap:12px; font-family:var(--font-mono); font-size:12px; color:var(--ink-dim); }
-  .hud-stats b{color:var(--cyan); font-weight:700;}
-  .change-btn{
-    font-family:var(--font-mono); font-size:10px; color:var(--ink-dim);
-    border:1px solid var(--panel-line); border-radius:6px; padding:3px 7px; cursor:pointer;
+  .level-tag{
+    text-align:center; font-family:var(--font-display); font-weight:900; font-size:16px;
+    letter-spacing:3px; padding:4px 4px 2px;
+    background:linear-gradient(90deg, var(--amber), var(--pink), var(--cyan));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 0 18px rgba(255,176,32,0.25);
+    animation:levelGlow 2.2s ease-in-out infinite alternate;
+  }
+  @keyframes levelGlow{ from{ filter:brightness(1); } to{ filter:brightness(1.4); } }
+
+  .game-area{ position:relative; display:flex; flex-direction:column; gap:12px; }
+
+  /* ---- fixed 4x5 tile grid (4 columns, 5 rows = 20 tiles) ---- */
+  .tray-grid{
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:7px;
+    padding:10px; background:var(--panel); border:1px solid var(--panel-line); border-radius:16px;
+  }
+  .tile{
+    aspect-ratio:1/0.72; border-radius:11px;
+    background:linear-gradient(180deg, var(--tile), #17203d); border:1px solid var(--tile-border);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-weight:700; font-size:20px; color:var(--amber);
+    cursor:pointer; box-shadow:0 3px 0 #0c1226, 0 4px 10px rgba(0,0,0,0.4);
+    transition:transform 0.08s, opacity 0.15s;
+  }
+  .tile.op{color:var(--cyan);}
+  .tile:active{transform:translateY(2px); box-shadow:0 1px 0 #0c1226;}
+  .tile.used{opacity:0; pointer-events:none; transform:scale(0.7);}
+  .tile.inactive{
+    background:var(--tile-inactive); border:1px dashed var(--tile-inactive-border);
+    box-shadow:none; cursor:default; pointer-events:none;
+    color:var(--ink-dim); opacity:0.5; font-weight:600;
   }
 
-  .stage-strip{ display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:11px; color:var(--ink-dim); padding:0 4px; }
-  .stage-strip .diff-tag{ color:var(--purple); font-weight:700; }
-  .stage-strip .progress{ color:var(--amber); font-weight:700; }
-  .stage-strip .line{flex:1; height:1px; background:var(--panel-line);}
-
-  .timer-track{ height:7px; border-radius:4px; background:var(--panel); overflow:hidden; border:1px solid var(--panel-line); }
-  .timer-fill{ height:100%; width:100%; background:linear-gradient(90deg, var(--cyan), var(--amber)); transition:width 0.3s linear, background 0.3s; }
-
+  /* ---- bottom equation builder ---- */
   .display-panel{
     background:linear-gradient(180deg, #0d1428, #0a0f22);
-    border:1px solid var(--panel-line); border-radius:16px; padding:22px 12px;
+    border:1px solid var(--panel-line); border-radius:16px; padding:18px 12px;
     box-shadow: inset 0 0 30px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.35);
     transition: box-shadow 0.25s, border-color 0.25s;
   }
   .display-panel.correct{ border-color:var(--green); box-shadow: inset 0 0 30px rgba(62,224,138,0.15), 0 0 24px rgba(62,224,138,0.35); }
   .display-panel.wrong{ border-color:var(--red); box-shadow: inset 0 0 30px rgba(255,92,108,0.15), 0 0 24px rgba(255,92,108,0.35); animation: shake 0.35s; }
   @keyframes shake{ 10%,90%{transform:translateX(-2px);} 20%,80%{transform:translateX(4px);} 30%,50%,70%{transform:translateX(-8px);} 40%,60%{transform:translateX(8px);} }
-  .slots{ display:flex; align-items:center; justify-content:center; gap:7px; flex-wrap:wrap; }
-  .slots.grid5{ display:grid; grid-template-columns:repeat(5, 62px); justify-content:center; gap:7px; }
+
+  .slots-row{ display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; }
   .slot{
-    width:62px; height:72px; border-radius:11px; border:2px dashed var(--panel-line);
+    width:50px; height:58px; border-radius:11px; border:2px dashed var(--panel-line);
     display:flex; align-items:center; justify-content:center;
-    font-family:var(--font-mono); font-size:26px; font-weight:700; color:var(--amber);
+    font-family:var(--font-mono); font-size:21px; font-weight:700; color:var(--amber);
     background:rgba(255,255,255,0.02); cursor:pointer; transition:border-color 0.15s, transform 0.1s;
+    flex-shrink:0;
   }
   .slot.filled{ border-style:solid; border-color:var(--tile-border); background:var(--tile); }
   .slot.op{color:var(--cyan);}
   .slot:active{transform:scale(0.94);}
-  .eq-stamp{
-    width:40px; height:72px; display:flex; align-items:center; justify-content:center;
-    font-family:var(--font-display); font-weight:900; font-size:26px; color:var(--ink-dim);
-    opacity:0.85; user-select:none;
+
+  .target-stamp{
+    display:flex; align-items:center; gap:6px; height:58px; padding:0 10px; border-radius:11px;
+    background:rgba(185,140,240,0.08); border:1px solid var(--purple);
+    font-family:var(--font-display); font-weight:900; font-size:19px; flex-shrink:0;
   }
+  .target-stamp .eq{ color:var(--ink-dim); }
+  .target-stamp .tgt{ color:var(--purple); }
+
+  .eq-inline{
+    display:flex; align-items:center; height:58px; padding:0 2px;
+    font-family:var(--font-display); font-weight:900; font-size:22px; color:var(--ink-dim);
+    flex-shrink:0;
+  }
+
   .status-msg{ text-align:center; margin-top:14px; font-family:var(--font-mono); font-size:14px; letter-spacing:0.5px; color:var(--ink-dim); min-height:18px; transition:transform 0.2s; }
   .status-msg.correct{color:var(--green); transform:scale(1.06); font-weight:700;}
   .status-msg.wrong{color:var(--red);}
-
-  .tray-label{ font-family:var(--font-mono); font-size:11px; color:var(--ink-dim); letter-spacing:1px; padding:0 4px; display:flex; justify-content:space-between; }
-  .tray{
-    display:flex; gap:9px; justify-content:center; flex-wrap:wrap;
-    padding:12px; background:var(--panel); border:1px solid var(--panel-line); border-radius:14px; min-height:84px;
-  }
-  .tray.grid5{ display:grid; grid-template-columns:repeat(5, 62px); justify-content:center; }
-  .tile{
-    width:62px; height:66px; border-radius:11px;
-    background:linear-gradient(180deg, var(--tile), #17203d); border:1px solid var(--tile-border);
-    display:flex; align-items:center; justify-content:center;
-    font-family:var(--font-mono); font-weight:700; font-size:23px; color:var(--amber);
-    cursor:pointer; box-shadow:0 3px 0 #0c1226, 0 4px 10px rgba(0,0,0,0.4);
-    transition:transform 0.08s, opacity 0.15s; position:relative;
-  }
-  .tile.op{color:var(--cyan);}
-  .tile.decoy{ border-color:var(--decoy-border); }
-  .tile.decoy::after{
-    content:''; position:absolute; top:3px; right:3px; width:5px; height:5px;
-    border-radius:50%; background:var(--purple);
-  }
-  .tile:active{transform:translateY(2px); box-shadow:0 1px 0 #0c1226;}
-  .tile.used{opacity:0; pointer-events:none; transform:scale(0.7);}
 
   .overlay{ position:fixed; inset:0; background:rgba(6,9,20,0.92); display:none; align-items:center; justify-content:center; z-index:10; padding:20px; }
   .overlay.show{display:flex;}
   .overlay-card{ background:var(--panel); border:1px solid var(--panel-line); border-radius:18px; padding:28px 24px; text-align:center; max-width:360px; width:100%; }
   .overlay-card h2{ font-family:var(--font-display); color:var(--amber); margin:0 0 4px; font-size:19px; letter-spacing:1px; }
-  .overlay-card p{color:var(--ink-dim); font-size:12.5px; margin:0 0 18px;}
-  .overlay-card p#champSub{ color:var(--ink); font-size:17px; font-weight:700; line-height:1.4; }
-  .overlay-card .final-score{ font-family:var(--font-mono); font-size:32px; color:var(--cyan); margin-bottom:18px; }
-  .overlay-card .trophy{ font-size:52px; margin-bottom:6px; }
-  .overlay-card .champ-title{ font-family:var(--font-display); color:var(--green); font-size:22px; letter-spacing:1px; margin:0 0 4px; }
+  .overlay-card p{color:var(--ink-dim); font-size:12.5px; margin:0 0 18px; line-height:1.6;}
   .overlay-actions{ display:flex; flex-direction:column; gap:10px; }
-
-  .diff-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:6px; }
-  .diff-btn{
-    text-align:left; padding:13px 14px; border-radius:12px; border:1px solid var(--panel-line);
-    background:var(--tile); cursor:pointer;
-  }
-  .diff-btn:active{opacity:0.75;}
-  .diff-btn .dname{ font-family:var(--font-display); font-weight:700; font-size:14px; letter-spacing:1px; }
-  .diff-btn .ddesc{ font-family:var(--font-mono); font-size:10.5px; color:var(--ink-dim); margin-top:3px; }
-  .diff-btn.easy .dname{color:var(--green);}
-  .diff-btn.medium .dname{color:var(--amber);}
-  .diff-btn.hard .dname{color:#ff9a5c;}
-  .diff-btn.veryhard .dname{color:var(--red);}
-  .diff-btn.locked{ opacity:0.4; pointer-events:none; }
 
   .btn{
     padding:13px 10px; border-radius:12px; border:1px solid var(--panel-line);
@@ -138,156 +127,105 @@
   }
   .btn:active{opacity:0.7;}
   .btn.primary{ background:linear-gradient(180deg, var(--amber), #d98f10); border-color:transparent; color:#231400; }
+
+  /* ---- BIG WIN CELEBRATION — pops up in place, over the tiles, same screen ---- */
+  .win-overlay{
+    position:absolute; inset:0; z-index:20; display:none; align-items:center; justify-content:center;
+    pointer-events:none;
+  }
+  .win-overlay.show{display:flex;}
+  .confetti-field{ position:absolute; inset:0; pointer-events:none; }
+  .confetti-piece{
+    position:absolute; opacity:0.95; will-change:transform, opacity;
+    animation:confettiFall linear forwards;
+  }
+  @keyframes confettiFall{
+    0%{ transform:translateY(0) rotate(0deg) scale(0.6); opacity:0; }
+    12%{ opacity:1; transform:translateY(-14px) rotate(60deg) scale(1); }
+    100%{ transform:translateY(230px) rotate(680deg) scale(1); opacity:0; }
+  }
+  .win-card{
+    position:relative; text-align:center; animation:popIn 0.4s cubic-bezier(.34,1.56,.64,1);
+    background:rgba(10,14,26,0.78); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+    border:1px solid rgba(255,176,32,0.35); border-radius:20px; padding:20px 26px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.5);
+  }
+  @keyframes popIn{ 0%{transform:scale(0.2) rotate(-8deg); opacity:0;} 60%{transform:scale(1.15) rotate(2deg); opacity:1;} 100%{transform:scale(1) rotate(0deg);} }
+  .win-ribbons{ font-size:30px; letter-spacing:8px; margin-bottom:2px; filter:drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
+  .win-title{
+    font-family:var(--font-display); font-weight:900; font-size:32px; letter-spacing:1.5px;
+    background:linear-gradient(90deg, var(--amber), var(--pink), var(--cyan));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 0 40px rgba(255,176,32,0.35);
+    animation:pulseGlow 0.9s ease-in-out infinite alternate;
+    white-space:nowrap;
+  }
+  @keyframes pulseGlow{ from{ filter:brightness(1); } to{ filter:brightness(1.35); } }
+  .win-sub{ font-family:var(--font-mono); font-size:13px; color:var(--ink); margin-top:8px; letter-spacing:0.5px; }
 </style>
 </head>
 <body>
 
 <div class="app">
-  <div class="hud">
-    <div class="brand">Math <span>DIY</span></div>
-    <div class="hud-stats">
-      <div>SCORE <b id="scoreVal">0</b></div>
-      <div class="change-btn" id="changeBtn">CHANGE</div>
+  <div class="game-area" id="gameArea">
+    <div class="tray-grid" id="tray"></div>
+
+    <div class="display-panel" id="displayPanel">
+      <div class="slots-row" id="slotsRow"></div>
+      <div class="status-msg" id="statusMsg"></div>
+    </div>
+
+    <div class="win-overlay" id="winOverlay">
+      <div class="confetti-field" id="confettiField"></div>
+      <div class="win-card">
+        <div class="win-ribbons">🎉🎀🎊</div>
+        <div class="win-title" id="winTitle">AWESOME!</div>
+        <div class="win-sub" id="winSub">Level 1 complete</div>
+      </div>
     </div>
   </div>
 
-  <div class="stage-strip">
-    <span class="diff-tag" id="diffTag">EASY</span>
-    <span class="progress" id="progressLabel">GAME 1 / 10</span>
-    <div class="line"></div>
-    <span id="opLabel">+ −</span>
-  </div>
-
-  <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
-
-  <div class="display-panel" id="displayPanel">
-    <div class="slots" id="slots"></div>
-    <div class="status-msg" id="statusMsg">tap tiles below to build the equation</div>
-  </div>
-
-  <div>
-    <div class="tray-label"><span>TILES</span><span id="decoyHint"></span></div>
-    <div class="tray" id="tray"></div>
-  </div>
-</div>
-
-<div class="overlay" id="timeoutOverlay">
-  <div class="overlay-card">
-    <h2>TIME'S UP</h2>
-    <p id="timeoutDesc">The forge went cold before you finished.</p>
-    <div class="final-score" id="timeoutScore">0</div>
-    <div class="overlay-actions">
-      <div class="btn primary" id="retryBtn">Try Again</div>
-      <div class="btn" id="timeoutMenuBtn">Choose Difficulty</div>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="champOverlay">
-  <div class="overlay-card">
-    <div class="trophy">🏆👏</div>
-    <div class="champ-title" id="champTitle">YOU ARE THE CHAMPION!</div>
-    <p id="champSub">Bravo! You solved all 10 equations.</p>
-    <div class="final-score" id="champScore">0</div>
-    <div class="overlay-actions">
-      <div class="btn primary" id="nextDiffBtn">Next Difficulty</div>
-      <div class="btn" id="champMenuBtn">Back to Menu</div>
-    </div>
-  </div>
+  <div class="level-tag" id="lvlTag">LEVEL 1</div>
 </div>
 
 <div class="overlay show" id="startOverlay">
   <div class="overlay-card">
     <h2>Math DIY</h2>
-    <p>Each difficulty is 10 equations against the clock. Pick one to start.</p>
-    <div class="diff-list">
-      <div class="diff-btn easy" data-diff="easy">
-        <div class="dname">EASY</div>
-        <div class="ddesc">+ − × ÷ &nbsp;•&nbsp; 5 tiles &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 1:00</div>
-      </div>
-      <div class="diff-btn medium" data-diff="medium">
-        <div class="dname">MEDIUM</div>
-        <div class="ddesc">+ − × ÷ &nbsp;•&nbsp; 6 tiles, 1 decoy &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 1:00</div>
-      </div>
-      <div class="diff-btn hard" data-diff="hard">
-        <div class="dname">HARD</div>
-        <div class="ddesc">2 operations &nbsp;•&nbsp; 8 tiles, 1 decoy &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 5:00</div>
-      </div>
-      <div class="diff-btn veryhard" data-diff="veryhard">
-        <div class="dname">VERY HARD</div>
-        <div class="ddesc">3 operations &nbsp;•&nbsp; 10 tiles, 2 decoys &nbsp;•&nbsp; 10 games &nbsp;•&nbsp; 5:00</div>
-      </div>
+    <p>Pick tiles to build an equation that makes sense. No timer — take your time. Each level unlocks a few more tiles and gets a bit tougher. Later on, the answer won't be given anymore — you'll need to find it yourself.</p>
+    <div class="overlay-actions">
+      <div class="btn primary" id="startBtn">Start</div>
     </div>
   </div>
 </div>
 
 <script>
 (function(){
-  const PRAISE = ["AWESOME!", "GREAT JOB!", "BRILLIANT!", "FANTASTIC!", "YOU'RE ON FIRE!", "NICE WORK!", "PERFECT!", "OUTSTANDING!", "WELL DONE!", "MATH WIZARD!", "CRUSHED IT!"];
-
-  const CHAMPION_MESSAGES = {
-    easy:     { title: "HALLELUJAH!",     sub: "You are awesome." },
-    medium:   { title: "GOD IS GOOD!",    sub: "You are God's precious kid." },
-    hard:     { title: "THANK YOU JESUS!", sub: "You are God's blessed kid." },
-    veryhard: { title: "PRAISE THE LORD!", sub: "You are God's masterpiece." },
-  };
-
-  const ENCOURAGE = (remaining)=>[
-    `Keep it up! ${remaining} more to go`,
-    `Good job! ${remaining} left`,
-    `Nice! ${remaining} more games to win`,
-    `You're crushing it — ${remaining} to go`,
-    `Great! ${remaining} more and you're champion`,
-    `${remaining} to go — don't stop now!`,
-  ];
-
-  const DIFF_ORDER = ['easy','medium','hard','veryhard'];
-  const DIFFICULTIES = {
-    easy:     { label:'EASY',      numCount:2, ops:['+','−','×','÷'], decoys:0, range:[1,10],  sessionTime:60 },
-    medium:   { label:'MEDIUM',    numCount:2, ops:['+','−','×','÷'], decoys:1, range:[1,12],  sessionTime:60 },
-    hard:     { label:'HARD',      numCount:3, ops:['+','−','×','÷'], decoys:1, range:[1,12],  sessionTime:300 },
-    veryhard: { label:'VERY HARD', numCount:4, ops:['+','−','×','÷'], decoys:2, range:[2,15],  sessionTime:300 },
-  };
-
-  const TOTAL_GAMES = 10;
+  const PRAISE = ["AWESOME!", "GREAT JOB!", "BRILLIANT!", "FANTASTIC!", "YOU'RE ON FIRE!", "NICE WORK!", "PERFECT!", "OUTSTANDING!", "WELL DONE!", "MATH WIZARD!", "CRUSHED IT!", "INCREDIBLE!", "GENIUS!"];
+  const CONFETTI_COLORS = ['#ffb020','#4fd8eb','#3ee08a','#ff5c6c','#b98cf0','#ff6fb0'];
+  const GRID_CELLS = 20; // fixed 4 columns x 5 rows
+  const BEGINNER_END = 20;   // levels 1-20: target is always shown
+  const ADVANCED_START = 21; // levels 21+: no given target, player supplies the result tile too
 
   const state = {
-    difficulty: 'easy',
-    gameIndex: 1,          // 1..10
-    score: 0,
-    sessionTimeLeft: 300,
-    sessionMaxTime: 300,
-    timerId: null,
-    puzzle: null,
+    level: 1,
+    puzzle: null,     // {tokens, target, hasFixedTarget, solutionCount, tray(16, some inactive)}
     slots: [],
     trayUsed: [],
     locked: false
   };
 
   const el = {
-    score: document.getElementById('scoreVal'),
-    diffTag: document.getElementById('diffTag'),
-    progressLabel: document.getElementById('progressLabel'),
-    opLabel: document.getElementById('opLabel'),
-    timerFill: document.getElementById('timerFill'),
-    displayPanel: document.getElementById('displayPanel'),
-    slots: document.getElementById('slots'),
-    status: document.getElementById('statusMsg'),
+    lvlTag: document.getElementById('lvlTag'),
     tray: document.getElementById('tray'),
-    decoyHint: document.getElementById('decoyHint'),
-    changeBtn: document.getElementById('changeBtn'),
+    displayPanel: document.getElementById('displayPanel'),
+    slotsRow: document.getElementById('slotsRow'),
+    status: document.getElementById('statusMsg'),
     startOverlay: document.getElementById('startOverlay'),
-    timeoutOverlay: document.getElementById('timeoutOverlay'),
-    timeoutDesc: document.getElementById('timeoutDesc'),
-    timeoutScore: document.getElementById('timeoutScore'),
-    retryBtn: document.getElementById('retryBtn'),
-    timeoutMenuBtn: document.getElementById('timeoutMenuBtn'),
-    champOverlay: document.getElementById('champOverlay'),
-    champTitle: document.getElementById('champTitle'),
-    champSub: document.getElementById('champSub'),
-    champScore: document.getElementById('champScore'),
-    nextDiffBtn: document.getElementById('nextDiffBtn'),
-    champMenuBtn: document.getElementById('champMenuBtn'),
+    startBtn: document.getElementById('startBtn'),
+    winOverlay: document.getElementById('winOverlay'),
+    winTitle: document.getElementById('winTitle'),
+    winSub: document.getElementById('winSub'),
+    confettiField: document.getElementById('confettiField'),
   };
 
   function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
@@ -296,8 +234,8 @@
     if(tokens.length===0 || tokens.length%2===0) return null;
     for(let i=0;i<tokens.length;i++){
       const expectNum = i%2===0;
-      if(expectNum && tokens[i].type!=='num') return null;
-      if(!expectNum && (tokens[i].type!=='op' || tokens[i].value==='=')) return null;
+      if(expectNum && (!tokens[i] || tokens[i].type!=='num')) return null;
+      if(!expectNum && (!tokens[i] || tokens[i].type!=='op')) return null;
     }
     const vals=[Number(tokens[0].value)];
     const ops=[];
@@ -323,38 +261,57 @@
     return result;
   }
 
-  function generateSolutionTokens(cfg){
-    const [lo,hi] = cfg.range;
-    let tokens=null, result=null, tries=0;
-    while(tries<800){
-      tries++;
-      const nums=[];
-      for(let i=0;i<cfg.numCount;i++) nums.push(rand(lo,hi));
-      const chosenOps=[];
-      for(let i=0;i<cfg.numCount-1;i++) chosenOps.push(cfg.ops[rand(0,cfg.ops.length-1)]);
-      const t=[];
-      for(let i=0;i<nums.length;i++){
-        t.push({value:String(nums[i]), type:'num'});
-        if(i<chosenOps.length) t.push({value:chosenOps[i], type:'op'});
-      }
-      const r = evalExpr(t);
-      if(r!==null && Number.isInteger(r) && Math.abs(r)<=999){
-        tokens=t; result=r; break;
-      }
-    }
-    if(!tokens){
-      const a=rand(lo,hi), b=rand(lo,hi);
-      tokens=[{value:String(a),type:'num'},{value:'+',type:'op'},{value:String(b),type:'num'}];
-      result=a+b;
-    }
-    tokens.push({value:'=', type:'op'});
-    tokens.push({value:String(result), type:'num'});
-    return tokens;
+  // How many of the 16 grid cells are "active" (show a real tile) vs grayed-out placeholders.
+  // Starts small (just the solution + 3 extra tiles) and ramps up to the full 4x4 by level 20.
+  function getActiveCount(level, solutionCount){
+    if(level>=BEGINNER_END) return GRID_CELLS;
+    const startActive = solutionCount + 3;
+    const t = (level-1)/(BEGINNER_END-1); // 0 at level1, 1 at level20
+    return Math.min(GRID_CELLS, Math.round(startActive + t*(GRID_CELLS-startActive)));
   }
 
-  function generateDecoy(cfg, existingValues){
-    const [lo,hi]=cfg.range;
-    for(let attempt=0; attempt<20; attempt++){
+  function getLevelConfig(level){
+    let hi = 9 + Math.floor((level-1)/2)*3;
+    hi = Math.min(hi, 30);
+    let ops = ['+','−'];
+    if(level>=3) ops.push('×');
+    if(level>=6) ops.push('÷');
+    const hasFixedTarget = level < ADVANCED_START;
+    const solutionCount = hasFixedTarget ? 5 : 6; // 5 = expression only; 6 = expression + self-found result tile
+    return { range:[1,hi], ops, hasFixedTarget, solutionCount };
+  }
+
+  function generateExpression(cfg){
+    const [lo,hi] = cfg.range;
+    let tries=0;
+    while(tries<800){
+      tries++;
+      const nums=[rand(lo,hi), rand(lo,hi), rand(lo,hi)];
+      const ops=[cfg.ops[rand(0,cfg.ops.length-1)], cfg.ops[rand(0,cfg.ops.length-1)]];
+      const tokens=[
+        {value:String(nums[0]), type:'num'},
+        {value:ops[0], type:'op'},
+        {value:String(nums[1]), type:'num'},
+        {value:ops[1], type:'op'},
+        {value:String(nums[2]), type:'num'},
+      ];
+      const r = evalExpr(tokens);
+      if(r!==null && Number.isInteger(r) && Math.abs(r)<=999){
+        return { tokens, target:r };
+      }
+    }
+    const a=rand(lo,hi), b=rand(lo,hi), c=rand(lo,hi);
+    const tokens=[
+      {value:String(a),type:'num'}, {value:'+',type:'op'},
+      {value:String(b),type:'num'}, {value:'+',type:'op'},
+      {value:String(c),type:'num'},
+    ];
+    return { tokens, target:a+b+c };
+  }
+
+  function generateDecoy(cfg, existingKeys){
+    const [lo,hi] = cfg.range;
+    for(let attempt=0; attempt<25; attempt++){
       const asNum = Math.random()<0.6;
       let tile;
       if(asNum){
@@ -362,68 +319,87 @@
       } else {
         tile = {value:cfg.ops[rand(0,cfg.ops.length-1)], type:'op'};
       }
-      if(!existingValues.includes(tile.value+tile.type)) return tile;
+      const key = tile.value+tile.type;
+      if(!existingKeys.includes(key)) return tile;
     }
     return {value:String(rand(lo,hi+9)), type:'num'};
   }
 
   function generatePuzzle(){
-    const cfg = DIFFICULTIES[state.difficulty];
-    const solutionTiles = generateSolutionTokens(cfg); // includes a fixed '=' tile
-    const realTiles = solutionTiles.filter(t=>t.value!=='='); // what the player actually places
+    const cfg = getLevelConfig(state.level);
+    const { tokens: exprTokens, target } = generateExpression(cfg);
+
+    // solutionTiles = the tiles the player must place. In fixed-target levels that's just
+    // the 5 expression tiles; in advanced levels the result tile is included too (6 total),
+    // since there's no given answer to check against visually.
+    const solutionTiles = cfg.hasFixedTarget ? exprTokens.slice() : exprTokens.concat([{value:String(target), type:'num'}]);
+
+    const activeCount = getActiveCount(state.level, cfg.solutionCount);
+    const decoyCount = Math.max(0, activeCount - solutionTiles.length);
     const seen = solutionTiles.map(t=>t.value+t.type);
     const decoys=[];
-    for(let i=0;i<cfg.decoys;i++){
+    for(let i=0;i<decoyCount;i++){
       const d = generateDecoy(cfg, seen.concat(decoys.map(x=>x.value+x.type)));
       decoys.push(d);
+      seen.push(d.value+d.type);
     }
-    const full = realTiles.concat(decoys);
-    let tray;
-    do{
-      tray = [...full].sort(()=>Math.random()-0.5);
-    } while(tray.every((t,i)=> i<realTiles.length ? t.value===realTiles[i].value : true) && decoys.length===0);
-    return { solutionTiles, realTiles, tray, slotCount: realTiles.length };
+
+    const activeTiles = solutionTiles.concat(decoys).sort(()=>Math.random()-0.5);
+    // Pad the rest of the 16 cells with inactive (grayed) placeholders, then shuffle positions.
+    const cells = activeTiles.map(t=>({...t, active:true}));
+    while(cells.length < GRID_CELLS) cells.push({active:false});
+    const tray = cells.sort(()=>Math.random()-0.5);
+
+    return {
+      target,
+      hasFixedTarget: cfg.hasFixedTarget,
+      solutionCount: cfg.solutionCount,
+      tray
+    };
   }
 
   function render(){
-    const cfg = DIFFICULTIES[state.difficulty];
-    el.score.textContent = state.score;
-    el.diffTag.textContent = cfg.label;
-    el.progressLabel.textContent = 'GAME ' + state.gameIndex + ' / ' + TOTAL_GAMES;
-    el.opLabel.textContent = cfg.ops.join(' ');
-    el.decoyHint.textContent = cfg.decoys>0 ? (cfg.decoys+' decoy tile(s) hidden') : '';
+    el.lvlTag.textContent = 'LEVEL ' + state.level;
 
-    const useGrid = (state.difficulty === 'hard' || state.difficulty === 'veryhard');
-    el.slots.classList.toggle('grid5', useGrid);
-    el.tray.classList.toggle('grid5', useGrid);
+    el.tray.innerHTML = '';
+    state.puzzle.tray.forEach((t, i)=>{
+      const d = document.createElement('div');
+      if(!t.active){
+        d.className = 'tile inactive';
+        d.textContent = '?';
+      } else {
+        d.className = 'tile' + (t.type==='op' ? ' op' : '') + (state.trayUsed[i] ? ' used' : '');
+        d.textContent = t.value;
+        d.addEventListener('click', ()=>onTrayTap(i));
+      }
+      el.tray.appendChild(d);
+    });
 
-    el.slots.innerHTML = '';
+    el.slotsRow.innerHTML = '';
+    const lastIdx = state.slots.length - 1;
     state.slots.forEach((s, i)=>{
-      if(i === state.slots.length - 1){
+      if(!state.puzzle.hasFixedTarget && i === lastIdx){
         const eq = document.createElement('div');
-        eq.className = 'eq-stamp';
+        eq.className = 'eq-inline';
         eq.textContent = '=';
-        el.slots.appendChild(eq);
+        el.slotsRow.appendChild(eq);
       }
       const d = document.createElement('div');
       d.className = 'slot' + (s ? ' filled' : '') + (s && s.type==='op' ? ' op' : '');
       d.textContent = s ? s.value : '';
       d.addEventListener('click', ()=>onSlotTap(i));
-      el.slots.appendChild(d);
+      el.slotsRow.appendChild(d);
     });
-
-    el.tray.innerHTML = '';
-    state.puzzle.tray.forEach((t, i)=>{
-      const d = document.createElement('div');
-      d.className = 'tile' + (t.type==='op' ? ' op' : '') + (state.trayUsed[i] ? ' used' : '');
-      d.textContent = t.value;
-      d.addEventListener('click', ()=>onTrayTap(i));
-      el.tray.appendChild(d);
-    });
+    if(state.puzzle.hasFixedTarget){
+      const stamp = document.createElement('div');
+      stamp.className = 'target-stamp';
+      stamp.innerHTML = '<span class="eq">=</span><span class="tgt">'+state.puzzle.target+'</span>';
+      el.slotsRow.appendChild(stamp);
+    }
   }
 
   function onTrayTap(i){
-    if(state.locked || state.trayUsed[i]) return;
+    if(state.locked || state.trayUsed[i] || !state.puzzle.tray[i].active) return;
     const emptySlot = state.slots.findIndex(s=>s===null);
     if(emptySlot===-1) return;
     state.slots[emptySlot] = {...state.puzzle.tray[i], trayIndex:i};
@@ -443,42 +419,67 @@
   }
 
   function checkAnswer(){
-    // '=' is fixed and stamped in — the last slot is always the result, everything
-    // before it is the expression the player has built.
-    const eqIndex = state.slots.length - 1;
-    const left = state.slots.slice(0, eqIndex);
-    const right = state.slots.slice(eqIndex);
-    const lv = evalExpr(left);
-    const rv = evalExpr(right);
-    const valid = lv!==null && rv!==null && Math.abs(lv-rv)<1e-9;
+    let valid;
+    if(state.puzzle.hasFixedTarget){
+      const value = evalExpr(state.slots);
+      valid = value!==null && Math.abs(value-state.puzzle.target)<1e-9;
+    } else {
+      const left = state.slots.slice(0, state.slots.length-1);
+      const right = state.slots[state.slots.length-1];
+      const lv = evalExpr(left);
+      const rv = right ? Number(right.value) : NaN;
+      valid = lv!==null && !Number.isNaN(rv) && Math.abs(lv-rv)<1e-9;
+    }
     if(valid) onCorrect(); else onWrong();
+  }
+
+  function spawnConfetti(container, count){
+    container.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    for(let i=0;i<count;i++){
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      const isRibbon = Math.random()<0.35;
+      const color = CONFETTI_COLORS[rand(0,CONFETTI_COLORS.length-1)];
+      const size = rand(6,11);
+      piece.style.left = rand(4,96)+'%';
+      piece.style.top = rand(2,42)+'%';
+      piece.style.width = (isRibbon? size*0.5 : size)+'px';
+      piece.style.height = (isRibbon? size*2.4 : size)+'px';
+      piece.style.background = color;
+      piece.style.borderRadius = isRibbon ? '2px' : (Math.random()<0.5 ? '50%' : '2px');
+      const duration = (1.1 + Math.random()*0.9).toFixed(2);
+      const delay = (Math.random()*0.35).toFixed(2);
+      piece.style.animationDuration = duration+'s';
+      piece.style.animationDelay = delay+'s';
+      frag.appendChild(piece);
+    }
+    container.appendChild(frag);
+  }
+
+  function showWinCelebration(onDone){
+    const praise = PRAISE[rand(0,PRAISE.length-1)];
+    el.winTitle.textContent = praise;
+    el.winSub.textContent = 'Level ' + state.level + ' complete';
+    spawnConfetti(el.confettiField, 46);
+    el.winOverlay.classList.add('show');
+    setTimeout(()=>{
+      el.winOverlay.classList.remove('show');
+      el.confettiField.innerHTML = '';
+      onDone();
+    }, 1600);
   }
 
   function onCorrect(){
     state.locked = true;
     el.displayPanel.classList.add('correct');
-    const praise = PRAISE[rand(0,PRAISE.length-1)];
-    const diffMult = {easy:1, medium:1.4, hard:2, veryhard:3}[state.difficulty];
-    state.score += Math.round((100 + Math.round((state.sessionTimeLeft/state.sessionMaxTime)*30)) * diffMult);
-    el.score.textContent = state.score;
+    setStatus('', '');
 
-    if(state.gameIndex >= TOTAL_GAMES){
-      setStatus('✓ ' + praise, 'correct');
-      stopTimer();
-      setTimeout(showChampion, 900);
-      return;
-    }
-
-    const remaining = TOTAL_GAMES - state.gameIndex;
-    const encouragePool = ENCOURAGE(remaining);
-    const encourage = encouragePool[rand(0,encouragePool.length-1)];
-    setStatus('✓ ' + praise + ' — ' + encourage, 'correct');
-
-    setTimeout(()=>{
+    showWinCelebration(()=>{
       el.displayPanel.classList.remove('correct');
-      state.gameIndex++;
+      state.level++;
       loadPuzzle();
-    }, 1100);
+    });
   }
 
   function onWrong(){
@@ -486,9 +487,9 @@
     setStatus('✗ NOT BALANCED — TRY AGAIN', 'wrong');
     setTimeout(()=>{
       el.displayPanel.classList.remove('wrong');
-      state.slots = new Array(state.puzzle.slotCount).fill(null);
+      state.slots = new Array(state.puzzle.solutionCount).fill(null);
       state.trayUsed = state.puzzle.tray.map(()=>false);
-      setStatus('tap tiles below to build the equation', '');
+      setStatus('', '');
       render();
     }, 700);
   }
@@ -498,90 +499,45 @@
     el.status.className = 'status-msg' + (cls ? ' '+cls : '');
   }
 
-  function startSessionTimer(){
-    stopTimer();
-    const cfg = DIFFICULTIES[state.difficulty];
-    state.sessionMaxTime = cfg.sessionTime;
-    state.sessionTimeLeft = cfg.sessionTime;
-    updateTimerBar();
-    state.timerId = setInterval(()=>{
-      state.sessionTimeLeft -= 0.1;
-      updateTimerBar();
-      if(state.sessionTimeLeft<=0){
-        stopTimer();
-        onSessionTimeout();
-      }
-    }, 100);
-  }
-  function stopTimer(){ if(state.timerId){ clearInterval(state.timerId); state.timerId=null; } }
-  function updateTimerBar(){
-    const pct = Math.max(0, (state.sessionTimeLeft/state.sessionMaxTime)*100);
-    el.timerFill.style.width = pct+'%';
-    el.timerFill.style.background = pct<20
-      ? 'linear-gradient(90deg, var(--red), #ff8a8a)'
-      : 'linear-gradient(90deg, var(--cyan), var(--amber))';
-  }
-
-  function onSessionTimeout(){
-    state.locked = true;
-    el.timeoutDesc.textContent = `You solved ${state.gameIndex-1} of ${TOTAL_GAMES} equations before time ran out.`;
-    el.timeoutScore.textContent = state.score;
-    el.timeoutOverlay.classList.add('show');
-  }
-
-  function showChampion(){
-    const idx = DIFF_ORDER.indexOf(state.difficulty);
-    const isLast = idx === DIFF_ORDER.length-1;
-    const msg = CHAMPION_MESSAGES[state.difficulty];
-    el.champTitle.textContent = msg.title;
-    el.champSub.textContent = msg.sub;
-    el.champScore.textContent = state.score;
-    if(isLast){
-      el.nextDiffBtn.textContent = 'You mastered every level!';
-      el.nextDiffBtn.classList.add('btn');
-      el.nextDiffBtn.onclick = showStartScreen;
-    } else {
-      const nextDiff = DIFF_ORDER[idx+1];
-      el.nextDiffBtn.textContent = 'Next Difficulty: ' + DIFFICULTIES[nextDiff].label;
-      el.nextDiffBtn.onclick = ()=> beginGame(nextDiff);
-    }
-    el.champOverlay.classList.add('show');
-  }
-
   function loadPuzzle(){
     state.locked = false;
     state.puzzle = generatePuzzle();
-    state.slots = new Array(state.puzzle.slotCount).fill(null);
+    state.slots = new Array(state.puzzle.solutionCount).fill(null);
     state.trayUsed = state.puzzle.tray.map(()=>false);
-    setStatus('tap tiles below to build the equation', '');
+    setStatus('', '');
+    saveProgress();
     render();
   }
 
-  function beginGame(diff){
-    state.difficulty = diff;
-    state.gameIndex = 1;
-    state.score = 0;
+  const SAVE_KEY = 'mathDiyProgress';
+  function saveProgress(){
+    try{ localStorage.setItem(SAVE_KEY, JSON.stringify({level: state.level})); }catch(e){}
+  }
+  function loadSavedLevel(){
+    try{
+      const raw = localStorage.getItem(SAVE_KEY);
+      if(!raw) return 1;
+      const data = JSON.parse(raw);
+      const lvl = Number(data.level);
+      return Number.isInteger(lvl) && lvl>=1 ? lvl : 1;
+    }catch(e){ return 1; }
+  }
+
+  function startGame(){
+    state.level = loadSavedLevel();
     el.startOverlay.classList.remove('show');
-    el.timeoutOverlay.classList.remove('show');
-    el.champOverlay.classList.remove('show');
     loadPuzzle();
-    startSessionTimer();
   }
 
-  function showStartScreen(){
-    stopTimer();
-    el.timeoutOverlay.classList.remove('show');
-    el.champOverlay.classList.remove('show');
-    el.startOverlay.classList.add('show');
-  }
+  el.startBtn.addEventListener('click', startGame);
 
-  el.changeBtn.addEventListener('click', showStartScreen);
-  el.timeoutMenuBtn.addEventListener('click', showStartScreen);
-  el.champMenuBtn.addEventListener('click', showStartScreen);
-  el.retryBtn.addEventListener('click', ()=> beginGame(state.difficulty));
-  document.querySelectorAll('.diff-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=> beginGame(btn.dataset.diff));
-  });
+  // Show the saved level on the start screen before the player even taps Start.
+  (function initStartScreen(){
+    const savedLevel = loadSavedLevel();
+    if(savedLevel > 1 && el.startBtn){
+      el.startBtn.textContent = 'Continue — Level ' + savedLevel;
+    }
+  })();
 })();
 </script>
 </body>

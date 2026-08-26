@@ -50,16 +50,16 @@
 
   .game-area{ position:relative; display:flex; flex-direction:column; gap:12px; }
 
-  /* ---- fixed 4x5 tile grid (4 columns, 5 rows = 20 tiles) ---- */
+  /* ---- fixed 4x6 tile grid (4 columns, 6 rows = 24 tiles) ---- */
   .tray-grid{
-    display:grid; grid-template-columns:repeat(4, 1fr); gap:7px;
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:6px;
     padding:10px; background:var(--panel); border:1px solid var(--panel-line); border-radius:16px;
   }
   .tile{
-    aspect-ratio:1/0.72; border-radius:11px;
+    aspect-ratio:1/0.62; border-radius:10px;
     background:linear-gradient(180deg, var(--tile), #17203d); border:1px solid var(--tile-border);
     display:flex; align-items:center; justify-content:center;
-    font-family:var(--font-mono); font-weight:700; font-size:20px; color:var(--amber);
+    font-family:var(--font-mono); font-weight:700; font-size:18px; color:var(--amber);
     cursor:pointer; box-shadow:0 3px 0 #0c1226, 0 4px 10px rgba(0,0,0,0.4);
     transition:transform 0.08s, opacity 0.15s;
   }
@@ -139,29 +139,43 @@
     position:absolute; opacity:0.95; will-change:transform, opacity;
     animation:confettiFall linear forwards;
   }
+  .confetti-piece.emoji{ font-size:20px; line-height:1; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4)); }
   @keyframes confettiFall{
-    0%{ transform:translateY(0) rotate(0deg) scale(0.6); opacity:0; }
-    12%{ opacity:1; transform:translateY(-14px) rotate(60deg) scale(1); }
-    100%{ transform:translateY(230px) rotate(680deg) scale(1); opacity:0; }
+    0%{ transform:translateY(0) rotate(0deg) scale(0.5); opacity:0; }
+    10%{ opacity:1; transform:translateY(-22px) rotate(70deg) scale(1.1); }
+    100%{ transform:translateY(260px) rotate(760deg) scale(0.9); opacity:0; }
   }
+  .burst-ring{
+    position:absolute; width:60px; height:60px; border-radius:50%;
+    border:3px solid var(--amber); opacity:0.9;
+    animation:burstOut 0.7s ease-out forwards;
+  }
+  @keyframes burstOut{ 0%{ transform:scale(0.3); opacity:0.9; } 100%{ transform:scale(6); opacity:0; } }
   .win-card{
-    position:relative; text-align:center; animation:popIn 0.4s cubic-bezier(.34,1.56,.64,1);
-    background:rgba(10,14,26,0.78); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
-    border:1px solid rgba(255,176,32,0.35); border-radius:20px; padding:20px 26px;
-    box-shadow:0 10px 40px rgba(0,0,0,0.5);
+    position:relative; text-align:center; animation:popIn 0.45s cubic-bezier(.34,1.56,.64,1);
+    background:rgba(10,14,26,0.8); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+    border:1px solid rgba(255,176,32,0.4); border-radius:22px; padding:22px 28px;
+    box-shadow:0 10px 50px rgba(0,0,0,0.55), 0 0 60px rgba(255,176,32,0.15);
   }
-  @keyframes popIn{ 0%{transform:scale(0.2) rotate(-8deg); opacity:0;} 60%{transform:scale(1.15) rotate(2deg); opacity:1;} 100%{transform:scale(1) rotate(0deg);} }
-  .win-ribbons{ font-size:30px; letter-spacing:8px; margin-bottom:2px; filter:drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
+  @keyframes popIn{ 0%{transform:scale(0.15) rotate(-10deg); opacity:0;} 55%{transform:scale(1.25) rotate(3deg); opacity:1;} 75%{transform:scale(0.95) rotate(-1deg);} 100%{transform:scale(1) rotate(0deg);} }
+  .win-ribbons{
+    font-size:38px; letter-spacing:10px; margin-bottom:4px;
+    filter:drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+    animation:ribbonWiggle 0.6s ease-in-out infinite alternate;
+  }
+  @keyframes ribbonWiggle{ from{ transform:rotate(-6deg) scale(1); } to{ transform:rotate(6deg) scale(1.08); } }
   .win-title{
-    font-family:var(--font-display); font-weight:900; font-size:32px; letter-spacing:1.5px;
-    background:linear-gradient(90deg, var(--amber), var(--pink), var(--cyan));
+    font-family:var(--font-display); font-weight:900; font-size:38px; letter-spacing:1.5px;
+    background:linear-gradient(90deg, var(--amber), var(--pink), var(--cyan), var(--green));
+    background-size:300% 100%;
     -webkit-background-clip:text; background-clip:text; color:transparent;
-    text-shadow:0 0 40px rgba(255,176,32,0.35);
-    animation:pulseGlow 0.9s ease-in-out infinite alternate;
+    text-shadow:0 0 50px rgba(255,176,32,0.4);
+    animation:pulseGlow 0.7s ease-in-out infinite alternate, shimmerMove 1.6s linear infinite;
     white-space:nowrap;
   }
-  @keyframes pulseGlow{ from{ filter:brightness(1); } to{ filter:brightness(1.35); } }
-  .win-sub{ font-family:var(--font-mono); font-size:13px; color:var(--ink); margin-top:8px; letter-spacing:0.5px; }
+  @keyframes pulseGlow{ from{ filter:brightness(1); } to{ filter:brightness(1.5); } }
+  @keyframes shimmerMove{ from{ background-position:0% 50%; } to{ background-position:100% 50%; } }
+  .win-sub{ font-family:var(--font-mono); font-size:14px; color:var(--ink); margin-top:9px; letter-spacing:0.5px; }
 </style>
 </head>
 <body>
@@ -178,7 +192,7 @@
     <div class="win-overlay" id="winOverlay">
       <div class="confetti-field" id="confettiField"></div>
       <div class="win-card">
-        <div class="win-ribbons">🎉🎀🎊</div>
+        <div class="win-ribbons" id="winRibbons">🎉🎀🎊</div>
         <div class="win-title" id="winTitle">AWESOME!</div>
         <div class="win-sub" id="winSub">Level 1 complete</div>
       </div>
@@ -200,9 +214,11 @@
 
 <script>
 (function(){
-  const PRAISE = ["AWESOME!", "GREAT JOB!", "BRILLIANT!", "FANTASTIC!", "YOU'RE ON FIRE!", "NICE WORK!", "PERFECT!", "OUTSTANDING!", "WELL DONE!", "MATH WIZARD!", "CRUSHED IT!", "INCREDIBLE!", "GENIUS!"];
+  const PRAISE = ["AWESOME!", "GREAT JOB!", "BRILLIANT!", "FANTASTIC!", "YOU'RE ON FIRE!", "NICE WORK!", "PERFECT!", "OUTSTANDING!", "WELL DONE!", "MATH WIZARD!", "CRUSHED IT!", "INCREDIBLE!", "GENIUS!", "UNSTOPPABLE!", "BOOM!", "SUPERSTAR!", "LEGENDARY!", "YOU NAILED IT!", "MIND BLOWN!", "PHENOMENAL!", "TOP MARKS!"];
+  const RIBBON_SETS = ["🎉🎊🎉","🥳🎇🥳","🏆✨🏆","🎆🎉🎆","🌟🎊🌟","🎉🥳🎉","⭐🎇⭐"];
+  const EMOJI_BURST = ["✨","⭐","🎉","🎊","💫","🌟"];
   const CONFETTI_COLORS = ['#ffb020','#4fd8eb','#3ee08a','#ff5c6c','#b98cf0','#ff6fb0'];
-  const GRID_CELLS = 20; // fixed 4 columns x 5 rows
+  const GRID_CELLS = 24; // fixed 6 columns x 4 rows
   const BEGINNER_END = 20;   // levels 1-20: target is always shown
   const ADVANCED_START = 21; // levels 21+: no given target, player supplies the result tile too
 
@@ -224,6 +240,7 @@
     startBtn: document.getElementById('startBtn'),
     winOverlay: document.getElementById('winOverlay'),
     winTitle: document.getElementById('winTitle'),
+    winRibbons: document.getElementById('winRibbons'),
     winSub: document.getElementById('winSub'),
     confettiField: document.getElementById('confettiField'),
   };
@@ -438,18 +455,28 @@
     const frag = document.createDocumentFragment();
     for(let i=0;i<count;i++){
       const piece = document.createElement('div');
-      piece.className = 'confetti-piece';
-      const isRibbon = Math.random()<0.35;
-      const color = CONFETTI_COLORS[rand(0,CONFETTI_COLORS.length-1)];
-      const size = rand(6,11);
-      piece.style.left = rand(4,96)+'%';
-      piece.style.top = rand(2,42)+'%';
-      piece.style.width = (isRibbon? size*0.5 : size)+'px';
-      piece.style.height = (isRibbon? size*2.4 : size)+'px';
-      piece.style.background = color;
-      piece.style.borderRadius = isRibbon ? '2px' : (Math.random()<0.5 ? '50%' : '2px');
-      const duration = (1.1 + Math.random()*0.9).toFixed(2);
-      const delay = (Math.random()*0.35).toFixed(2);
+      const roll = Math.random();
+      if(roll < 0.22){
+        // emoji burst piece
+        piece.className = 'confetti-piece emoji';
+        piece.textContent = EMOJI_BURST[rand(0,EMOJI_BURST.length-1)];
+        piece.style.left = rand(4,96)+'%';
+        piece.style.top = rand(2,45)+'%';
+        piece.style.fontSize = rand(16,26)+'px';
+      } else {
+        const isRibbon = roll < 0.55;
+        piece.className = 'confetti-piece';
+        const color = CONFETTI_COLORS[rand(0,CONFETTI_COLORS.length-1)];
+        const size = rand(6,12);
+        piece.style.left = rand(4,96)+'%';
+        piece.style.top = rand(2,45)+'%';
+        piece.style.width = (isRibbon? size*0.5 : size)+'px';
+        piece.style.height = (isRibbon? size*2.6 : size)+'px';
+        piece.style.background = color;
+        piece.style.borderRadius = isRibbon ? '2px' : (Math.random()<0.5 ? '50%' : '2px');
+      }
+      const duration = (1.0 + Math.random()*1.0).toFixed(2);
+      const delay = (Math.random()*0.4).toFixed(2);
       piece.style.animationDuration = duration+'s';
       piece.style.animationDelay = delay+'s';
       frag.appendChild(piece);
@@ -457,17 +484,34 @@
     container.appendChild(frag);
   }
 
+  function spawnBurstRings(container, count){
+    const frag = document.createDocumentFragment();
+    for(let i=0;i<count;i++){
+      const ring = document.createElement('div');
+      ring.className = 'burst-ring';
+      ring.style.left = 'calc(50% - 30px)';
+      ring.style.top = 'calc(50% - 30px)';
+      ring.style.borderColor = CONFETTI_COLORS[rand(0,CONFETTI_COLORS.length-1)];
+      ring.style.animationDelay = (i*0.15)+'s';
+      frag.appendChild(ring);
+    }
+    container.appendChild(frag);
+  }
+
   function showWinCelebration(onDone){
     const praise = PRAISE[rand(0,PRAISE.length-1)];
+    const ribbons = RIBBON_SETS[rand(0,RIBBON_SETS.length-1)];
     el.winTitle.textContent = praise;
+    el.winRibbons.textContent = ribbons;
     el.winSub.textContent = 'Level ' + state.level + ' complete';
-    spawnConfetti(el.confettiField, 46);
+    spawnConfetti(el.confettiField, 70);
+    spawnBurstRings(el.confettiField, 3);
     el.winOverlay.classList.add('show');
     setTimeout(()=>{
       el.winOverlay.classList.remove('show');
       el.confettiField.innerHTML = '';
       onDone();
-    }, 1600);
+    }, 1900);
   }
 
   function onCorrect(){
